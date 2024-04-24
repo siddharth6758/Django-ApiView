@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -7,10 +8,13 @@ from rest_framework.authentication import TokenAuthentication
 from usersapp.models import *
 from usersapp.serializers import *
 
+@login_required(login_url='/user-auth/login')
+def logout_user(req):
+    logout(req)
+    return JsonResponse({'message': 'User logged out successfully'})
+
 class UserAuthAPIView(APIView):
-
     authentication_classes = [TokenAuthentication]
-
     def post(self, req, type):
         if type == "login":
             email = req.data["email"]
