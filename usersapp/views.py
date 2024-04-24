@@ -1,21 +1,20 @@
 from django.shortcuts import render
 from django.contrib.auth import login, logout, authenticate
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
 from usersapp.models import *
 from usersapp.serializers import *
 
-
 class UserAuthAPIView(APIView):
 
-    @csrf_exempt
+    authentication_classes = [TokenAuthentication]
+
     def post(self, req, type):
         if type == "login":
             email = req.data["email"]
             password = req.data["password"]
-            print(email, password)
             if not CustomUser.objects.filter(email=email).exists():
                 return Response({"error": f"{email} User does not exists!"})
             else:
@@ -23,19 +22,18 @@ class UserAuthAPIView(APIView):
                 if user is None:
                     return Response({"error": "Credentials are incorrect!"})
                 else:
-                    userdata = UserAppSerializer(data=req.data)
+                    token,_ = Token.objects.get_or_create(user=user)
+                    req.header = {
+                        'Authorization': token.key
+                    }
                     login(req, user)
-                    if not userdata.is_valid():
-                        return Response({
-                            "error": userdata.errors
-                            })
                     return Response(
                         {
                             "success": "User logged in!",
-                            "user-data": userdata.data,
+                            "user-data": req.data,
                         }
                     )
-        if type == "signup":
+        elif type == "signup":
             serializer = UserAppSerializer(data=req.data)
             if not serializer.is_valid():
                 return Response({"error": serializer.errors})
@@ -49,3 +47,5 @@ class UserAuthAPIView(APIView):
                     "token": token.key,
                 }
             )
+        else:
+            return Response({"error": 'Invalid authentication'})
