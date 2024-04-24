@@ -1,0 +1,5 @@
+django
+djangorestframework
+django-jazzmin
+psycopg2-binary
+psycopg2
