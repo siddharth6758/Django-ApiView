@@ -1,0 +1,16 @@
+signup:
+{
+  "first_name":"qwe",
+  "last_name":"123",
+  "username":"qwe123",
+  "email":"qwe@gmail.com",
+  "address":"address-123,xyz-lane,567330",
+  "phone":"9090909090",
+  "password":"qwe123"
+}
+
+login:
+{
+  "email":"qwe@gmail.com",
+  "password":"qwe123"
+}
