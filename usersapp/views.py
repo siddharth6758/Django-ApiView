@@ -19,6 +19,7 @@ class UserAuthAPIView(APIView):
         if type == "login":
             email = req.data["email"]
             password = req.data["password"]
+            print(req)
             if not CustomUser.objects.filter(email=email).exists():
                 return Response({"error": f"{email} User does not exists!"})
             else:
