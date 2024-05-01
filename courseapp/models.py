@@ -1,6 +1,7 @@
+import random,string,os
 from django.db import models
 from usersapp.models import CustomUser
-import random,string,os
+from django.core.validators import MinValueValidator,MaxValueValidator
 
 def pk_generator():
     charset = string.ascii_uppercase + string.digits
@@ -59,3 +60,18 @@ class Review(models.Model):
     review_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     review_on = models.DateTimeField(auto_now_add=True)
     review = models.CharField(max_length=200)
+    rate = models.IntegerField(validators=[MinValueValidator(1),MaxValueValidator(5)])
+    
+    def save(self,*args,**kwargs):
+        super().save(*args, **kwargs)
+        course = self.course_id
+        ratings = Review.objects.filter(course_id=course)
+        total_rate = sum(rating.rate for rating in ratings)
+        num_rate = len(ratings)
+        if num_rate>0:
+            avg_rating = total_rate/num_rate
+        else:
+            avg_rating = 0
+        course.details['avg_rating'] = avg_rating
+        course.details['rating_count'] = num_rate
+        course.save()
