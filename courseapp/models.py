@@ -55,6 +55,7 @@ class Lesson(models.Model):
     video = models.FileField(upload_to=save_tbn_vids)
     uploaded_on = models.DateTimeField(auto_now_add=True)
     
+    
 class Review(models.Model):
     course_id = models.ForeignKey(Course,on_delete=models.CASCADE)
     review_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
@@ -75,3 +76,13 @@ class Review(models.Model):
         course.details['avg_rating'] = avg_rating
         course.details['rating_count'] = num_rate
         course.save()
+        
+        
+class Comments(models.Model):
+    comment_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    comment_on = models.DateTimeField(auto_now_add=True)
+    comment = models.CharField(max_length=100)
+    lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
+    type = models.CharField(max_length=1,delfault='C')
+    
+    
