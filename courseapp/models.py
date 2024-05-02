@@ -83,6 +83,6 @@ class Comments(models.Model):
     comment_on = models.DateTimeField(auto_now_add=True)
     comment = models.CharField(max_length=100)
     lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
-    type = models.CharField(max_length=1,delfault='C')
+    type = models.CharField(max_length=1,default='C')
     
     

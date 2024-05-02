@@ -1,6 +1,6 @@
-from django.http import JsonResponse
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
+from rest_framework import permissions
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -8,18 +8,23 @@ from rest_framework.authentication import TokenAuthentication
 from usersapp.models import *
 from usersapp.serializers import *
 
-@login_required(login_url='/user-auth/login')
-def logout_user(req):
-    logout(req)
-    return JsonResponse({'message': 'User logged out successfully'})
 
+# class LogoutAPIView(APIView):
+    
+#     def post(self,req):
+#         print(req)
+#         token,_ = Token.objects.get(user = req.user)
+#         print(token,'---deleting')
+#         Token.objects.filter(user=req.user).delete()
+#         return Response({"message": "User logged out successfully."})     
+    
 class UserAuthAPIView(APIView):
     authentication_classes = [TokenAuthentication]
+    
     def post(self, req, type):
         if type == "login":
             email = req.data["email"]
             password = req.data["password"]
-            print(req)
             if not CustomUser.objects.filter(email=email).exists():
                 return Response({"error": f"{email} User does not exists!"})
             else:
@@ -28,14 +33,15 @@ class UserAuthAPIView(APIView):
                     return Response({"error": "Credentials are incorrect!"})
                 else:
                     token,_ = Token.objects.get_or_create(user=user)
-                    req.header = {
-                        'Authorization': token.key
-                    }
+                    # req.header = {
+                    #     'Authorization': token.key
+                    # }
                     login(req, user)
                     return Response(
                         {
                             "success": "User logged in!",
                             "user-data": req.data,
+                            "token":token.key
                         }
                     )
         elif type == "signup":
@@ -54,3 +60,13 @@ class UserAuthAPIView(APIView):
             )
         else:
             return Response({"error": 'Invalid authentication'})
+        
+    def delete(self, req, type):
+        print(req.data)
+        if type == "logout":
+            if req.user.is_authenticated:
+                Token.objects.filter(user=req.user).delete()
+                logout(req)
+                return Response({"success": "User logged out!"})
+            else:
+                return Response({"error": "User is not authenticated!"})
