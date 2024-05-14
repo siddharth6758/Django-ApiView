@@ -40,7 +40,7 @@ class Course(models.Model):
     details = models.JSONField(default=course_details)
     course_uploaded_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     uploaded_on = models.DateField(auto_now_add=True)
-    thumbnail = models.FileField(upload_to=save_tbn_vids)
+    thumbnail = models.FileField(upload_to=save_tbn_vids,null=True,blank=True)
     
     def save(self,*args,**kwargs):
         if not self.prod_id:
@@ -52,7 +52,7 @@ class Course(models.Model):
 class Lesson(models.Model):
     course_id = models.ForeignKey(Course,on_delete=models.CASCADE)
     details = models.JSONField(default=lesson_details)
-    video = models.FileField(upload_to=save_tbn_vids)
+    video = models.FileField(upload_to=save_tbn_vids,null=True,blank=True)
     uploaded_on = models.DateTimeField(auto_now_add=True)
     
     
