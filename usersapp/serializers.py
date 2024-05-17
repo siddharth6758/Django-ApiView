@@ -13,7 +13,8 @@ class UserAppSerializer(serializers.ModelSerializer):
             first_name = data['first_name'],
             last_name = data['last_name'],
             address = data['address'],
-            phone = data['phone']
+            phone = data['phone'],
+            is_logged_in = True
         )
         user.set_password(data['password'])
         user.save()

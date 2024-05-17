@@ -85,4 +85,6 @@ class Comments(models.Model):
     lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
     type = models.CharField(max_length=1,default='C')
     
-    
+
+class Enrollment(models.Model):
+    course_id = models.ManyToManyField(CustomUser)

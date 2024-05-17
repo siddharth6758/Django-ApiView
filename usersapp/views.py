@@ -20,12 +20,20 @@ class UserAuthAPIView(APIView):
                 user = authenticate(req, email=email, password=password)
                 if user is None:
                     return Response({"error": "Credentials are incorrect!"})
+                elif user.is_logged_in == True:
+                    return Response(
+                        {
+                            "success": f"{user.username} already logged in!"
+                        }
+                    )
                 else:
                     token,_ = Token.objects.get_or_create(user=user)
                     req.header = {
                         'Authorization': token.key
                     }
                     login(req, user)
+                    user.is_logged_in = True
+                    user.save()
                     return Response(
                         {
                             "success": "User logged in!",
@@ -47,14 +55,18 @@ class UserAuthAPIView(APIView):
                     "token": token.key,
                 }
             )
+        elif type == "logout":
+            user = CustomUser.objects.filter(email=req.data['email']).first()
+            if user.is_logged_in == True:
+                user.is_logged_in = False
+                user.save()
+                logout(req)
+                return Response({
+                    'data':f'{user.email} logged out successfully!'
+                })
+            else:
+                return Response({
+                    'data':'User not logged in!'
+                })
         else:
             return Response({"error": 'Invalid authentication'})
-
-class UserLogoutAPIView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request):
-        user = request.user
-        logout(request)  # Log the user out from the session
-        return Response({"success": f"{user} logged out!"})
