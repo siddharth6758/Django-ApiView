@@ -11,10 +11,10 @@ def pk_generator():
 def save_tbn_vids(self,filename):
     ext = os.path.splitext(filename)[1]
     if ext == 'mp4':
-        filename = f'vid_{self.course_id}.{ext}'
+        filename = f'vid_{self.course_id}{ext}'
         return os.path.join('lectures',filename)
     else:
-        filename = f'tbn_{self.course_id}.{ext}'
+        filename = f'tbn_{self.course_id}{ext}'
         return os.path.join('thumbnails',filename)
     
 
@@ -36,7 +36,7 @@ def lesson_details():
     }
 
 class Course(models.Model):
-    course_id = models.CharField(primary_key=True)
+    course_id = models.CharField(primary_key=True,default=pk_generator)
     details = models.JSONField(default=course_details)
     course_uploaded_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     uploaded_on = models.DateField(auto_now_add=True)

@@ -3,7 +3,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 from usersapp.models import *
 from usersapp.serializers import *
 
@@ -23,7 +22,7 @@ class UserAuthAPIView(APIView):
                 elif user.is_logged_in == True:
                     return Response(
                         {
-                            "success": f"{user.username} already logged in!"
+                            "success": f"{user.email} already logged in!"
                         }
                     )
                 else:
@@ -34,6 +33,7 @@ class UserAuthAPIView(APIView):
                     login(req, user)
                     user.is_logged_in = True
                     user.save()
+                    req.session['user_id'] = user.email
                     return Response(
                         {
                             "success": "User logged in!",
@@ -56,11 +56,14 @@ class UserAuthAPIView(APIView):
                 }
             )
         elif type == "logout":
+            print(req.session.get('user_id',None))
             user = CustomUser.objects.filter(email=req.data['email']).first()
             if user.is_logged_in == True:
                 user.is_logged_in = False
                 user.save()
                 logout(req)
+                del req.session['user_id']
+                print(req.session.get('user_id',None))
                 return Response({
                     'data':f'{user.email} logged out successfully!'
                 })
@@ -69,4 +72,4 @@ class UserAuthAPIView(APIView):
                     'data':'User not logged in!'
                 })
         else:
-            return Response({"error": 'Invalid authentication'})
+            return Response({"error": 'Invalid url authentication'})

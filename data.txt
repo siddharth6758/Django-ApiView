@@ -14,3 +14,16 @@ login:
   "email":"qwe@gmail.com",
   "password":"qwe123"
 }
+
+course upload:
+{
+  "details": {
+              "title":"Python Course",
+              "description":"A beginner-friendly course on Python programming.",
+              "domain":"IT",
+              "price":120,
+              "avg_rating":0,
+              "rating_count":0
+              },
+  "thumbnail":"/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/images/img1.jpeg"
+}
