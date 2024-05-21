@@ -42,3 +42,21 @@ course upload:
               },
   "thumbnail":"/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/images/img2.jpeg"
 }
+
+course patch:
+{
+  "course_id":"KH7QTY",
+  "details": {
+              "title":"Python Course Updated",
+              "description":"A Intermediate-friendly course on Python programming.",
+              "domain":"IT",
+              "price":130,
+              "avg_rating":0,
+              "rating_count":0
+              }
+}
+
+course delete:
+{
+  "course_id":"KH7QTY"
+}

@@ -13,11 +13,11 @@ def save_tbn_vids(data,filename):
     if ext == 'mp4':
         filename = f'vid_{data}{ext}'
         return os.path.join('lectures',filename)
-    elif ext in ['jpg','jpeg','png']:
+    elif any(i in ext for i in ['jpg','jpeg','png']):
         filename = f'tbn_{data}{ext}'
         return os.path.join('thumbnails',filename)
     else:
-        return 'Wrong file format...'
+        return f'Wrong file format for {data}...'
 
 
 class CourseAPIView(APIView):
@@ -40,32 +40,75 @@ class CourseAPIView(APIView):
             return Response({"error": 'Invalid url authentication'})
         
         
-    def post(self,req,type):
-        if type == 'upload':
-            if req.session.get('user_id',None):
-                user = CustomUser.objects.get(id=req.session.get('user_id',None))
-                req.data['course_uploaded_by'] = user.id
+    def post(self,req):
+        if req.session.get('user_id',None):
+            user = CustomUser.objects.get(id=req.session.get('user_id',None))
+            req.data['course_uploaded_by'] = user.id
+        else:
+            return Response({
+                'error':'User not logged in!'
+            })
+        serializer = CourseSerializer(data=req.data)
+        if not serializer.is_valid():
+            return Response({
+                'error':serializer.errors
+            })
+        serializer.save()
+        tbn_file = serializer.data['thumbnail']
+        dest_path = os.path.join(settings.MEDIA_ROOT,save_tbn_vids(serializer.data['course_id'],tbn_file))
+        shutil.copy(tbn_file,dest_path)
+        return Response({
+            'success':'Course created!',
+            'data':serializer.data
+        })
+        
+        
+    def patch(self,req):
+        try:
+            c_id = req.data['course_id']
+            course = Course.objects.get(course_id=c_id)
+            serializer = CourseSerializer(course,data=req.data,partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({
+                    'success':f'{c_id} updated successfully!',
+                    'data':serializer.data
+                })
+        except Exception as e:
+            return Response({
+                'error': str(e)
+            })
+            
+            
+    def delete(self,req):
+        try:
+            c_id = req.data['course_id']
+            media_url = os.path.join(settings.MEDIA_ROOT,'thumbnails')
+            print(media_url)
+            tbn_file = None
+            for i in os.listdir(media_url):
+                if c_id in i:
+                    tbn_file = i
+            print(tbn_file)
+            if tbn_file is not None:
+                tbn_path = os.path.join(media_url,tbn_file)
+                os.remove(tbn_path)
             else:
                 return Response({
-                    'error':'User not logged in!'
-                })
-            serializer = CourseSerializer(data=req.data)
-            if not serializer.is_valid():
-                return Response({
-                    'error':serializer.errors
-                })
-            serializer.save()
-            tbn_file = serializer.data['thumbnail']
-            dest_path = os.path.join(settings.MEDIA_ROOT,save_tbn_vids(serializer.data['course_id'],tbn_file))
-            shutil.copy(tbn_file,dest_path)
+                        'error':f'{tbn_file} not found!',
+                        'path':f'{tbn_path}'
+                    })
+            Course.objects.get(course_id=c_id).delete()
             return Response({
-                'success':'Course created!',
-                'data':serializer.data
+                    'success':f'{c_id} deleted successfully!'
+                })
+        except Exception as e:
+            return Response({
+                'error': str(e)
             })
-        else:
-            return Response({"error": 'Invalid url authentication'})
-            
     
+
+
 
 class CommentAPIView(APIView):
     
