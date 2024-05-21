@@ -107,7 +107,8 @@ class CourseAPIView(APIView):
                 'error': str(e)
             })
     
-
+class LessonsAPIView(APIView):
+    pass
 
 
 class CommentAPIView(APIView):
