@@ -33,7 +33,7 @@ class UserAuthAPIView(APIView):
                     login(req, user)
                     user.is_logged_in = True
                     user.save()
-                    req.session['user_id'] = user.email
+                    req.session['user_id'] = user.id
                     return Response(
                         {
                             "success": "User logged in!",
@@ -48,6 +48,14 @@ class UserAuthAPIView(APIView):
             serializer.save()
             user = CustomUser.objects.get(email=serializer.data['email'])
             token,_ = Token.objects.get_or_create(user=user)
+            if req.session.get('user_id',None) is not None:
+                user = CustomUser.objects.get(id=req.session.get('user_id',None))
+                return Response(
+                {
+                    'error':f'{user.email} is already logged in...'
+                }
+            )
+            req.session['user_id'] = user.id
             return Response(
                 {
                     "success": "User registered!",
@@ -56,14 +64,12 @@ class UserAuthAPIView(APIView):
                 }
             )
         elif type == "logout":
-            print(req.session.get('user_id',None))
-            user = CustomUser.objects.filter(email=req.data['email']).first()
+            user = CustomUser.objects.filter(id=req.session.get('user_id',None)).first()
             if user.is_logged_in == True:
                 user.is_logged_in = False
                 user.save()
-                logout(req)
                 del req.session['user_id']
-                print(req.session.get('user_id',None))
+                logout(req)
                 return Response({
                     'data':f'{user.email} logged out successfully!'
                 })

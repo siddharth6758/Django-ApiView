@@ -14,6 +14,10 @@ login:
   "email":"qwe@gmail.com",
   "password":"qwe123"
 }
+{
+  "email":"asd@gmail.com",
+  "password":"asd123"
+}
 
 course upload:
 {
@@ -26,4 +30,15 @@ course upload:
               "rating_count":0
               },
   "thumbnail":"/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/images/img1.jpeg"
+}
+{
+  "details": {
+              "title":"OpenEdx Course",
+              "description":"A beginner-friendly course on OpenEdx.",
+              "domain":"IT",
+              "price":35,
+              "avg_rating":0,
+              "rating_count":0
+              },
+  "thumbnail":"/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/images/img2.jpeg"
 }
