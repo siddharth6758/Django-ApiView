@@ -60,3 +60,14 @@ course delete:
 {
   "course_id":"KH7QTY"
 }
+
+
+lessons upload:
+{ 
+  "course_id":"553ITD",
+  "details": {
+              "title":"Lesson 1",
+              "description":"Description 1"
+              },
+  "thumbnail":"/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/lessons/SampleVideo_1280x720_1mb.mp4"
+}

@@ -8,16 +8,23 @@ from usersapp.models import *
 import shutil
 
 
-def save_tbn_vids(data,filename):
+def save_tbn(data,filename):
     ext = os.path.splitext(filename)[1]
-    if ext == 'mp4':
-        filename = f'vid_{data}{ext}'
-        return os.path.join('lectures',filename)
-    elif any(i in ext for i in ['jpg','jpeg','png']):
+    if any(i in ext for i in ['jpg','jpeg','png']):
         filename = f'tbn_{data}{ext}'
         return os.path.join('thumbnails',filename)
     else:
         return f'Wrong file format for {data}...'
+    
+    
+def save_vids(cid,title,filename):
+    ext = os.path.splitext(filename)[1]
+    if ext == 'mp4':
+        filename = f'vid_{cid}_{title}{ext}'
+        if os.path.exists(os.path.join(settings.BASE_DIR,settings.STATIC_URL,'lectures',cid)):
+            return os.path.join('lectures',filename)
+    else:
+        return f'Wrong file format for {cid}_{title}...'
 
 
 class CourseAPIView(APIView):
@@ -55,7 +62,7 @@ class CourseAPIView(APIView):
             })
         serializer.save()
         tbn_file = serializer.data['thumbnail']
-        dest_path = os.path.join(settings.MEDIA_ROOT,save_tbn_vids(serializer.data['course_id'],tbn_file))
+        dest_path = os.path.join(settings.MEDIA_ROOT,save_tbn(serializer.data['course_id'],tbn_file))
         shutil.copy(tbn_file,dest_path)
         return Response({
             'success':'Course created!',
@@ -84,12 +91,10 @@ class CourseAPIView(APIView):
         try:
             c_id = req.data['course_id']
             media_url = os.path.join(settings.MEDIA_ROOT,'thumbnails')
-            print(media_url)
             tbn_file = None
             for i in os.listdir(media_url):
                 if c_id in i:
                     tbn_file = i
-            print(tbn_file)
             if tbn_file is not None:
                 tbn_path = os.path.join(media_url,tbn_file)
                 os.remove(tbn_path)
@@ -108,9 +113,47 @@ class CourseAPIView(APIView):
             })
     
 class LessonsAPIView(APIView):
-    pass
+    
+    authentication_classes = [TokenAuthentication]
+    
+    def get(self,req):
+        if Course.objects.filter(course_id=req.data['course_id']).exists():
+            lessons = Lesson.objects.get(course_id=req.data['course_id'])
+            serializer = LessonSerializer(data=lessons,many=True)
+            return Response({
+                'data':serializer.data
+            })
+        else:
+            return Response({
+                'error':f'{req.data["course_id"]} not found!'
+            })
 
-
+    def post(self,req):
+        if req.session.get('user_id',None):
+            course_creator = Course.objects.get(course_id=req.data['course_id'])
+            if req.session.get('user_id',None) == course_creator.id:
+                serializer = LessonSerializer(data=req.data)
+                if not serializer.is_valid():
+                    return Response({
+                        'error':serializer.errors
+                    })
+                serializer.save()
+                video = serializer.data['video']
+                dest_path = os.path.join(settings.MEDIA_ROOT,save_vids(serializer.data['course_id'],video))
+                shutil.copy(video,dest_path)
+                return Response({
+                    'success':'Lesson uploaded successfully',
+                    'data':serializer.data
+                })
+            else:
+                return Response({
+                    'error':'User cannot upload, invalid course creator!'
+                })
+        else:
+            return Response({
+                'error':'User not logged in!'
+            })
+    
 class CommentAPIView(APIView):
     
     def post(self,req,type):
