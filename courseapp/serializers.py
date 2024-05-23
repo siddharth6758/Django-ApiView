@@ -13,6 +13,7 @@ class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
         fields = "__all__"
+        depth = 1
         
 class CommentsSerializer(serializers.ModelSerializer):
     comment_by = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())

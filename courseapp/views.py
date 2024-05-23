@@ -19,10 +19,13 @@ def save_tbn(data,filename):
     
 def save_vids(cid,title,filename):
     ext = os.path.splitext(filename)[1]
-    if ext == 'mp4':
-        filename = f'vid_{cid}_{title}{ext}'
-        if os.path.exists(os.path.join(settings.BASE_DIR,settings.STATIC_URL,'lectures',cid)):
-            return os.path.join('lectures',filename)
+    if ext == '.mp4':
+        filename = f'vid_{cid}_{title.replace(" ","_")}{ext}'
+        if os.path.exists(os.path.join(settings.MEDIA_ROOT,'lectures',cid)):
+            return os.path.join('lectures',cid,filename)
+        else:
+            os.makedirs(os.path.join(settings.MEDIA_ROOT, 'lectures', cid))
+            return os.path.join('lectures',cid,filename)
     else:
         return f'Wrong file format for {cid}_{title}...'
 
@@ -118,8 +121,8 @@ class LessonsAPIView(APIView):
     
     def get(self,req):
         if Course.objects.filter(course_id=req.data['course_id']).exists():
-            lessons = Lesson.objects.get(course_id=req.data['course_id'])
-            serializer = LessonSerializer(data=lessons,many=True)
+            lessons = Lesson.objects.filter(course_id=req.data['course_id'])
+            serializer = LessonSerializer(lessons,many=True)
             return Response({
                 'data':serializer.data
             })
@@ -128,10 +131,11 @@ class LessonsAPIView(APIView):
                 'error':f'{req.data["course_id"]} not found!'
             })
 
+
     def post(self,req):
         if req.session.get('user_id',None):
-            course_creator = Course.objects.get(course_id=req.data['course_id'])
-            if req.session.get('user_id',None) == course_creator.id:
+            course = Course.objects.get(course_id=req.data['course_id'])
+            if req.session.get('user_id',None) == course.course_uploaded_by.id:
                 serializer = LessonSerializer(data=req.data)
                 if not serializer.is_valid():
                     return Response({
@@ -139,7 +143,7 @@ class LessonsAPIView(APIView):
                     })
                 serializer.save()
                 video = serializer.data['video']
-                dest_path = os.path.join(settings.MEDIA_ROOT,save_vids(serializer.data['course_id'],video))
+                dest_path = os.path.join(settings.MEDIA_ROOT,save_vids(serializer.data['course_id'],serializer.data['details']['title'],video))
                 shutil.copy(video,dest_path)
                 return Response({
                     'success':'Lesson uploaded successfully',
@@ -154,7 +158,7 @@ class LessonsAPIView(APIView):
                 'error':'User not logged in!'
             })
     
+
+
 class CommentAPIView(APIView):
-    
-    def post(self,req,type):
-        pass
+    pass
