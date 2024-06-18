@@ -62,6 +62,12 @@ course delete:
 }
 
 
+fetch lessons:
+{
+  "course_id": "FORUMZ"
+}
+
+
 lessons upload:
 { 
   "course_id":"553ITD",
