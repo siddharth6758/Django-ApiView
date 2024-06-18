@@ -33,3 +33,11 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
         fields = "__all__"
+        
+class ReplySerializer(serializers.ModelSerializer):
+    reply_by = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    reply_to = serializers.PrimaryKeyRelatedField(queryset=Comments.objects.all())
+    class Meta:
+        model = Reply
+        fields = "__all__"
+        

@@ -7,6 +7,10 @@ def pk_generator():
     charset = string.ascii_uppercase + string.digits
     return ''.join(random.choices(charset,k=6))
 
+def pk_comment_generator():
+    charset = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(charset,k=12))
+
   
 def course_details():
     return {
@@ -69,11 +73,23 @@ class Review(models.Model):
         
         
 class Comments(models.Model):
+    comment_id = models.CharField(primary_key=True,default=pk_comment_generator)
     comment_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     comment_on = models.DateTimeField(auto_now_add=True)
     comment = models.CharField(max_length=100)
     lesson_id = models.ForeignKey(Lesson,on_delete=models.CASCADE)
-    type = models.CharField(max_length=1,default='C')
+
+    def save(self,*args,**kwargs):
+        if not self.comment_id:
+            self.comment_id = pk_comment_generator()
+        super().save(*args, **kwargs)
+
+
+class Reply(models.Model):
+    reply_to = models.ForeignKey(Comments,on_delete=models.CASCADE)
+    reply_by = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    reply = models.CharField(max_length=100)
+    reply_time = models.DateTimeField(auto_now_add=True)
     
 
 class Enrollment(models.Model):

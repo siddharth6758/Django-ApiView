@@ -161,4 +161,36 @@ class LessonsAPIView(APIView):
 
 
 class CommentAPIView(APIView):
-    pass
+    
+    authentication_classes = [TokenAuthentication]
+    
+    def get(self,req):
+        if not Comments.objects.filter(lesson_id=req.data['lesson_id']).exists():
+            return Response({
+                'info':f'Comments on Lesson-id: {req.data["lesson_id"]} not found!'
+            })
+        else:
+            comments = Comments.objects.filter(lesson_id=req.data['lesson_id'])
+            serializer = CommentsSerializer(comments,many=True)
+            return Response({
+                'data':serializer.data
+            })
+    
+    def post(self,req):
+        if req.session.get('user_id',None):
+            user = CustomUser.objects.get(id=req.session.get('user_id',None))
+            req.data['comment_by'] = user.id
+            serializer = CommentsSerializer(data=req.data)
+            if not serializer.is_valid():
+                return Response({
+                    'error':serializer.errors
+                })
+            serializer.save()
+            return Response({
+                'success':'Comment Added!',
+                'data':serializer.data
+            })
+        else:
+            return Response({
+                'error':'User not logged in!'
+            })

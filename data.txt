@@ -85,3 +85,15 @@ lessons upload:
   },
   "video": "/home/siddharth/Desktop/Django/Projects/Django-APIView-elearning/static/lessons/SampleVideo_1280x720_2mb.mp4"
 }
+
+
+comments_post:
+{
+  "lesson_id":5,
+  "comment":"This is comment on lesson id 5"
+}
+
+comments_get:
+{
+  "lesson_id":5
+}
